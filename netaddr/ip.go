@@ -1,6 +1,7 @@
 package netaddr
 
 import (
+	"errors"
 	"math"
 	"net"
 )
@@ -77,4 +78,20 @@ func IPMod(ip net.IP, d uint) uint {
 	hi := ipToU64(ip[:net.IPv6len/2])
 	lo := ipToU64(ip[net.IPv6len/2:])
 	return uint(((hi%b)*((0-b)%b) + lo%b) % b)
+}
+
+func IPDiff(ip1, ip2 net.IP) (uint64, error) {
+	ip1IsV4 := IsIPv4(ip1)
+	ip2IsV4 := IsIPv4(ip2)
+	if ip1IsV4 != ip2IsV4 {
+		return 0, errors.New("unidentical ip versions")
+	}
+
+	if ip1IsV4 {
+		a := int(ipToI32(ip1[len(ip1)-4:]))
+		b := int(ipToI32(ip2[len(ip2)-4:]))
+		return uint64(a - b), nil
+	}
+
+	return 0, errors.New("supporrt only ipv4")
 }
